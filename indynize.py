@@ -1,11 +1,11 @@
 
 from __future__ import print_function
 
-import sys, re, os.path, argparse
-
+import sys, re, os.path, argparse, shutil, platform
 
 options = None
 
+is_windows = (platform.system () == "Windows")
 
 def main ():
     global options
@@ -42,13 +42,19 @@ def main ():
         m = re.match ("^(?P<stem>.*)-indy.jar$", f)
         if m:
             stem = m.group ("stem")
-            do_link (os.path.join (indy_dir, f), os.path.join (libdir, stem + ".jar"))
+            if is_windows:
+                do_copy (os.path.join (indy_dir, f), os.path.join (libdir, stem + ".jar"))
+            else:
+                do_link (os.path.join (indy_dir, f), os.path.join (libdir, stem + ".jar"))
 
     for f in os.listdir (orig_libdir):
         src = os.path.join (orig_libdir, f)
         dst = os.path.join (libdir, f)
         if not os.path.exists (dst):
-            do_link (src, dst)
+            if is_windows:
+                do_copy (src, dst)
+            else:
+                do_link (src, dst)
     sys.exit (0)
 
 
@@ -92,9 +98,20 @@ def do_link (src, dst):
     :param dst Destination file name:
     """
     if options.verbose:
-        print ("Link {0} as {0}".format (src, dst), file = sys.stderr)
+        print ("Link {0} as {1}".format (src, dst), file = sys.stderr)
     if not options.dry_run:
         os.link (src, dst)
+
+def do_copy (src, dst):
+    """
+    Copy a file
+    :param src Source file name:
+    :param dst Destination file name:
+    """
+    if options.verbose:
+        print ("Copy {0} as {1}".format (src, dst), file = sys.stderr)
+    if not options.dry_run:
+        shutil.copy (src, dst)
 
 if __name__ == "__main__":
     main ()
