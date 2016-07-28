@@ -12,7 +12,7 @@ def main ():
     def get_groovy_dir ():
         groovy_dir = os.path.join (os.environ ["HOME"], ".gvm/groovy/current")
         try:
-            groovy_dir = os.path.join (os.environ ["GVM_DIR"], "groovy/current")
+            groovy_dir = os.environ ["GROOVY_HOME"]
         except KeyError:
             pass
         return groovy_dir
